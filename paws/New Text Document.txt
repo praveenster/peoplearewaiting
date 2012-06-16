@@ -1,0 +1,30 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VEVENT
+DTSTART:20120616T210000Z
+DTEND:20120616T220000Z
+DTSTAMP:20120616T192715Z
+ORGANIZER;CN=Praveen Moorthy:mailto:me@praveenster.com
+UID:bo35ju4qoc6v1dajsgos90euh4@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE
+ ;CN=Praveen Moorthy;X-NUM-GUESTS=0:mailto:me@praveenster.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=
+ TRUE;CN=people are waiting;X-NUM-GUESTS=0:mailto:peoplearewaiting@gmail.com
+CREATED:20120616T192101Z
+DESCRIPTION:can you read me?\nView your event at http://www.google.com/cale
+ ndar/event?action=VIEW&eid=Ym8zNWp1NHFvYzZ2MWRhanNnb3M5MGV1aDQgcGVvcGxlYXJl
+ d2FpdGluZ0Bt&tok=MTgjbWVAcHJhdmVlbnN0ZXIuY29tZGM5MWI5YTVkNDNiNTMxZDNhN2QyOG
+ RiMWEwYWFmMjljOGIyNDlkNg&ctz=America/Los_Angeles&hl=en.
+LAST-MODIFIED:20120616T192715Z
+LOCATION:co-merge conf1
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Pawwww
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR
+
+FetchAllMessages("pop.gmail.com", 995, true, "recent:peoplearewaiting@gmail.com", "paw123456");

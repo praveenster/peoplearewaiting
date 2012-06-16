@@ -1,0 +1,9 @@
+C:\Users\Steve\AppData\Local\Temporary Projects\paws\bin\Release\paws.exe
+C:\Users\Steve\AppData\Local\Temporary Projects\paws\bin\Release\paws.pdb
+C:\Users\Steve\AppData\Local\Temporary Projects\paws\obj\x86\Release\paws.exe
+C:\Users\Steve\AppData\Local\Temporary Projects\paws\obj\x86\Release\paws.pdb
+C:\Users\Steve\Documents\GitHub\peoplearewaiting\paws\obj\x86\Release\paws.exe
+C:\Users\Steve\Documents\GitHub\peoplearewaiting\paws\obj\x86\Release\paws.pdb
+C:\Users\Steve\Documents\GitHub\peoplearewaiting\paws\bin\Release\paws.exe
+C:\Users\Steve\Documents\GitHub\peoplearewaiting\paws\bin\Release\paws.pdb
+C:\Users\Steve\Documents\GitHub\peoplearewaiting\paws\bin\Release\OpenPop.dll
