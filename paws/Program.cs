@@ -90,6 +90,29 @@ namespace paws
                             }
                         }
                     }
+                    else if (lines[i].StartsWith("ORGANIZER"))
+                    {
+                        String[] words = lines[i].Split(';');
+                        for (int j = 0; j < words.Length; j++)
+                        {
+                            if (words[j].StartsWith("CN="))
+                            {
+                                String[] part = words[j].Split(':');
+                                if ((part.Length == 3) &&
+                                    (part[0].StartsWith("CN")) &&
+                                    (part[1].StartsWith("mailto")))
+                                {
+                                    String[] subparts = part[0].Split('=');
+                                    if (subparts.Length > 1)
+                                    {
+                                        String name = subparts[1];
+                                    }
+
+                                    String email = part[2];
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
