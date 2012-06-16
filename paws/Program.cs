@@ -39,11 +39,56 @@ namespace paws
 
             // Then find the relevant lines.
             // Make sure this is a VCALENDAR attachment.
-            if (lines[0].Contains("BEGIN:VCALENDAR") {
+            if (lines[0].StartsWith("BEGIN:VCALENDAR")) {
                 for (int i = 0; i < lines.Count; i++)
                 {
-                    if (lines[i].Contains("ATTENDEE;"))
+                    if (lines[i].StartsWith("ATTENDEE;CUTYPE="))
                     {
+                        String[] words = lines[i].Split(';');
+                        for (int j = 0; j < words.Length; j++)
+                        {
+                            if (words[j].StartsWith("CN="))
+                            {
+                                String[] parts = words[j].Split('=');
+                                if (parts.Length > 1)
+                                {
+                                    String name = parts[1];
+                                }
+                            }
+                            else if (words[j].StartsWith("X-NUM-GUESTS"))
+                            {
+                                String[] part = words[j].Split(':');
+                                if ((part.Length == 3) &&
+                                    (part[0].StartsWith("X-NUM-GUESTS")) &&
+                                    (part[1].StartsWith("mailto")))
+                                {
+                                    String attendee = part[2];
+                                }
+                            }
+                        }
+                    }
+                    else if (lines[i].StartsWith("ORGANIZER"))
+                    {
+                        String[] words = lines[i].Split(';');
+                        for (int j = 0; j < words.Length; j++)
+                        {
+                            if (words[j].StartsWith("CN="))
+                            {
+                                String[] part = words[j].Split(':');
+                                if ((part.Length == 3) &&
+                                    (part[0].StartsWith("CN")) &&
+                                    (part[1].StartsWith("mailto")))
+                                {
+                                    String[] subparts = part[0].Split('=');
+                                    if (subparts.Length > 1)
+                                    {
+                                        String name = subparts[1];
+                                    }
+
+                                    String email = part[2];
+                                }
+                            }
+                        }
                     }
                 }
             }
