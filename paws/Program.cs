@@ -10,7 +10,7 @@ using OpenPop.Pop3;
 
 namespace paws
 {
-    class Program
+    class MailboxScanner
     {
         private static void ParseICalendar(byte[] attachment)
         {
@@ -90,27 +90,40 @@ namespace paws
                             }
                         }
                     }
-                    else if (lines[i].StartsWith("ORGANIZER"))
+                    else if (lines[i].StartsWith("SUMMARY"))
                     {
-                        String[] words = lines[i].Split(';');
-                        for (int j = 0; j < words.Length; j++)
+                        String[] words = lines[i].Split(':');
+                        if ((words.Length == 2) &&
+                            (words[0].StartsWith("SUMMARY")))
                         {
-                            if (words[j].StartsWith("CN="))
-                            {
-                                String[] part = words[j].Split(':');
-                                if ((part.Length == 3) &&
-                                    (part[0].StartsWith("CN")) &&
-                                    (part[1].StartsWith("mailto")))
-                                {
-                                    String[] subparts = part[0].Split('=');
-                                    if (subparts.Length > 1)
-                                    {
-                                        String name = subparts[1];
-                                    }
-
-                                    String email = part[2];
-                                }
-                            }
+                            String title = words[1];
+                        }
+                    }
+                    else if (lines[i].StartsWith("LOCATION"))
+                    {
+                        String[] words = lines[i].Split(':');
+                        if ((words.Length == 2) &&
+                            (words[0].StartsWith("LOCATION")))
+                        {
+                            String location = words[1];
+                        }
+                    }
+                    else if (lines[i].StartsWith("DTSTART"))
+                    {
+                        String[] words = lines[i].Split(':');
+                        if ((words.Length == 2) &&
+                            (words[0].StartsWith("DTSTART")))
+                        {
+                            String startDate = words[1];
+                        }
+                    }
+                    else if (lines[i].StartsWith("DTEND"))
+                    {
+                        String[] words = lines[i].Split(':');
+                        if ((words.Length == 2) &&
+                            (words[0].StartsWith("DTEND")))
+                        {
+                            String endDate = words[1];
                         }
                     }
                 }
