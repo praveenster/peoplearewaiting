@@ -25,11 +25,34 @@ namespace paws
 
         public String ToJson()
         {
-            // "20120616T210000Z"
-            DateTime dtStart = DateTime.ParseExact(startDate, "yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
+            DateTime dtStart = new DateTime();
+            try
+            {
+                // "20120616T210000Z"
+                dtStart = DateTime.ParseExact(startDate, "yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
+            }
+            catch (FormatException fe)
+            {
+                // "20120616T210000"
+                dtStart = DateTime.ParseExact(startDate, "yyyyMMddTHHmmss", CultureInfo.InvariantCulture);
+            }
+
+            //DateTime dtStart = DateTime.ParseExact(startDate, "yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
             String startDateFormatted = dtStart.ToShortDateString(); // dtStart.Month + "/" + dtStart.Day + "/" + dtStart.Year;
             String startTimeFormatted = dtStart.ToShortTimeString(); // dtStart.Hour + ":" + dtStart.Minute + ":" + dtStart.Second;
-            DateTime dtEnd = DateTime.ParseExact(endDate, "yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
+
+            DateTime dtEnd = new DateTime();
+            try
+            {
+                // "20120616T210000Z"
+                dtEnd = DateTime.ParseExact(endDate, "yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
+            }
+            catch (FormatException fe)
+            {
+                // "20120616T210000"
+                dtEnd = DateTime.ParseExact(endDate, "yyyyMMddTHHmmss", CultureInfo.InvariantCulture);
+            }
+
             String endDateFormatted = dtEnd.ToShortDateString(); //dtEnd.Month + "/" + dtEnd.Day + "/" + dtEnd.Year;
             String endTimeFormatted = dtEnd.ToShortTimeString(); //dtEnd.Month + "/" + dtEnd.Day + "/" + dtEnd.Year;
 
@@ -143,6 +166,32 @@ namespace paws
 
                     m.attendees.Add(attendee);
                 }
+                if (lines[i].StartsWith("ATTENDEE;ROLE="))
+                {
+                    Person attendee = new Person();
+                    String[] words = lines[i].Split(';');
+                    for (int j = 0; j < words.Length; j++)
+                    {
+                        if (words[j].StartsWith("CN="))
+                        {
+                            String[] part = words[j].Split(':');
+                            if ((part.Length == 3) &&
+                                (part[0].StartsWith("CN")) &&
+                                (part[1].StartsWith("mailto", StringComparison.CurrentCultureIgnoreCase)))
+                            {
+                                String[] subparts = part[0].Split('=');
+                                if (subparts.Length > 1)
+                                {
+                                    attendee.name = subparts[1];
+                                }
+
+                                attendee.email = part[2];
+                            }
+                        }
+                    }
+
+                    m.attendees.Add(attendee);
+                }
                 else if (lines[i].StartsWith("ORGANIZER"))
                 {
                     Person organizer = new Person();
@@ -154,7 +203,7 @@ namespace paws
                             String[] part = words[j].Split(':');
                             if ((part.Length == 3) &&
                                 (part[0].StartsWith("CN")) &&
-                                (part[1].StartsWith("mailto")))
+                                (part[1].StartsWith("mailto", StringComparison.CurrentCultureIgnoreCase)))
                             {
                                 String[] subparts = part[0].Split('=');
                                 if (subparts.Length > 1)
@@ -274,8 +323,15 @@ namespace paws
                         {
                             for (int j = 0; j < m.MessagePart.MessageParts.Count; j++)
                             {
-                                if ((m.MessagePart.MessageParts[j].IsAttachment) &&
-                                    (m.MessagePart.MessageParts[j].FileName == "invite.ics"))
+                                //if (m.MessagePart.MessageParts[j].Body != null)
+                                //{
+                                //    System.Console.Write(ASCIIEncoding.ASCII.GetString(m.MessagePart.MessageParts[j].Body));
+                                //}
+
+                                if (((m.MessagePart.MessageParts[j].IsAttachment) &&
+                                    (m.MessagePart.MessageParts[j].FileName == "invite.ics")) ||
+                                    ((m.MessagePart.MessageParts[j].ContentType != null) && 
+                                     (m.MessagePart.MessageParts[j].ContentType.MediaType.StartsWith("text/calendar"))))
                                 {
                                     //System.Console.Write(ASCIIEncoding.ASCII.GetString(m.MessagePart.MessageParts[j].Body));
                                     List<String> lines = ParseICalendar(m.MessagePart.MessageParts[j].Body);
@@ -290,7 +346,7 @@ namespace paws
                                         System.Console.WriteLine("Processing Message: " + uid);
                                         System.Console.WriteLine("JSON: " + json);
                                         seenUids.Add(uid);
-                                        PostJsonToWebServer(json);
+                                        //PostJsonToWebServer(json);
                                     }
                                 }
                             }

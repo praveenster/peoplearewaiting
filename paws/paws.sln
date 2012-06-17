@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C# Express 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "paws", "paws.csproj", "{589A9233-68C0-4B14-AA9D-C013DEB7F91A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SendGridConnector", "..\SendGridConnector\SendGridConnector.csproj", "{A137EBDE-5812-4120-AE78-404B2B3BB6FD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -13,6 +15,10 @@ Global
 		{589A9233-68C0-4B14-AA9D-C013DEB7F91A}.Debug|x86.Build.0 = Debug|x86
 		{589A9233-68C0-4B14-AA9D-C013DEB7F91A}.Release|x86.ActiveCfg = Release|x86
 		{589A9233-68C0-4B14-AA9D-C013DEB7F91A}.Release|x86.Build.0 = Release|x86
+		{A137EBDE-5812-4120-AE78-404B2B3BB6FD}.Debug|x86.ActiveCfg = Debug|x86
+		{A137EBDE-5812-4120-AE78-404B2B3BB6FD}.Debug|x86.Build.0 = Debug|x86
+		{A137EBDE-5812-4120-AE78-404B2B3BB6FD}.Release|x86.ActiveCfg = Release|x86
+		{A137EBDE-5812-4120-AE78-404B2B3BB6FD}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
