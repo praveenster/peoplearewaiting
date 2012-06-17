@@ -18,17 +18,57 @@ namespace paws
         public String title;
         public Person organizer;
         public List<Person> attendees = new List<Person>();
+
+        public String ToJson()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("{");
+            sb.Append("\"StartDate\" : "); sb.Append("\""); sb.Append(startDate); sb.Append("\""); sb.Append(", ");
+            sb.Append("\"EndDate\" : "); sb.Append("\""); sb.Append(endDate); sb.Append("\""); sb.Append(", ");
+            sb.Append("\"Location\" : "); sb.Append("\""); sb.Append(location); sb.Append("\""); sb.Append(", ");
+            sb.Append("\"Title\" : "); sb.Append("\""); sb.Append(title); sb.Append("\""); sb.Append(", ");
+            sb.Append("\"Organizer\" : "); sb.Append(organizer.ToJson()); sb.Append(", ");
+            sb.Append("\"Attendees\" : ");
+            sb.Append("[ ");
+
+            for (int i = 0; i < attendees.Count; i++)
+            {
+                Person p = attendees[i];
+                sb.Append(p.ToJson());
+
+                if (i < attendees.Count - 1)
+                {
+                    sb.Append(", ");
+                }
+            }
+
+            sb.Append(" ]");
+            sb.Append("}");
+
+            return sb.ToString();
+        }
     }
 
     class Person
     {
         public String name;
         public String email;
+
+        public String ToJson()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("{");
+            sb.Append("\"Name\" : "); sb.Append("\""); sb.Append(name); sb.Append("\""); sb.Append(", ");
+            sb.Append("\"Email\" : "); sb.Append("\""); sb.Append(email); sb.Append("\"");
+            sb.Append("}");
+
+            return sb.ToString();
+        }
     }
 
     class MailboxScanner
     {
-        private void ParseICalendar(byte[] attachment)
+        private List<String> ParseICalendar(byte[] attachment)
         {
             List<String> lines = new List<string>();
 
@@ -53,13 +93,7 @@ namespace paws
                 }
             }
 
-            // Then find the relevant lines.
-            // Make sure this is a VCALENDAR attachment.
-            if (lines[0].StartsWith("BEGIN:VCALENDAR"))
-            {
-                Meeting m = new Meeting();
-                ExtractAttributes(lines, m);
-            }
+            return lines;
         }
 
         private void ExtractAttributes(List<String> lines, Meeting m)
@@ -202,7 +236,17 @@ namespace paws
                                     (m.MessagePart.MessageParts[j].FileName == "invite.ics"))
                                 {
                                     System.Console.Write(ASCIIEncoding.ASCII.GetString(m.MessagePart.MessageParts[j].Body));
-                                    ParseICalendar(m.MessagePart.MessageParts[j].Body);
+                                    List<String> lines = ParseICalendar(m.MessagePart.MessageParts[j].Body);
+
+                                    // Then find the relevant lines.
+                                    // Make sure this is a VCALENDAR attachment.
+                                    if ((lines != null) && lines[0].StartsWith("BEGIN:VCALENDAR"))
+                                    {
+                                        Meeting meeting = new Meeting();
+                                        ExtractAttributes(lines, meeting);
+                                        String json = meeting.ToJson();
+                                        System.Console.Write("JSON: " + json);
+                                    }
                                 }
                             }
                         }
