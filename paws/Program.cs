@@ -10,9 +10,25 @@ using OpenPop.Pop3;
 
 namespace paws
 {
+    class Meeting
+    {
+        public String startDate;
+        public String endDate;
+        public String location;
+        public String title;
+        public Person organizer;
+        public List<Person> attendees = new List<Person>();
+    }
+
+    class Person
+    {
+        public String name;
+        public String email;
+    }
+
     class MailboxScanner
     {
-        private static void ParseICalendar(byte[] attachment)
+        private void ParseICalendar(byte[] attachment)
         {
             List<String> lines = new List<string>();
 
@@ -39,92 +55,105 @@ namespace paws
 
             // Then find the relevant lines.
             // Make sure this is a VCALENDAR attachment.
-            if (lines[0].StartsWith("BEGIN:VCALENDAR")) {
-                for (int i = 0; i < lines.Count; i++)
-                {
-                    if (lines[i].StartsWith("ATTENDEE;CUTYPE="))
-                    {
-                        String[] words = lines[i].Split(';');
-                        for (int j = 0; j < words.Length; j++)
-                        {
-                            if (words[j].StartsWith("CN="))
-                            {
-                                String[] parts = words[j].Split('=');
-                                if (parts.Length > 1)
-                                {
-                                    String name = parts[1];
-                                }
-                            }
-                            else if (words[j].StartsWith("X-NUM-GUESTS"))
-                            {
-                                String[] part = words[j].Split(':');
-                                if ((part.Length == 3) &&
-                                    (part[0].StartsWith("X-NUM-GUESTS")) &&
-                                    (part[1].StartsWith("mailto")))
-                                {
-                                    String attendee = part[2];
-                                }
-                            }
-                        }
-                    }
-                    else if (lines[i].StartsWith("ORGANIZER"))
-                    {
-                        String[] words = lines[i].Split(';');
-                        for (int j = 0; j < words.Length; j++)
-                        {
-                            if (words[j].StartsWith("CN="))
-                            {
-                                String[] part = words[j].Split(':');
-                                if ((part.Length == 3) &&
-                                    (part[0].StartsWith("CN")) &&
-                                    (part[1].StartsWith("mailto")))
-                                {
-                                    String[] subparts = part[0].Split('=');
-                                    if (subparts.Length > 1)
-                                    {
-                                        String name = subparts[1];
-                                    }
+            if (lines[0].StartsWith("BEGIN:VCALENDAR"))
+            {
+                Meeting m = new Meeting();
+                ExtractAttributes(lines, m);
+            }
+        }
 
-                                    String email = part[2];
-                                }
+        private void ExtractAttributes(List<String> lines, Meeting m)
+        {
+            for (int i = 0; i < lines.Count; i++)
+            {
+                if (lines[i].StartsWith("ATTENDEE;CUTYPE="))
+                {
+                    Person attendee = new Person();
+                    String[] words = lines[i].Split(';');
+                    for (int j = 0; j < words.Length; j++)
+                    {
+                        if (words[j].StartsWith("CN="))
+                        {
+                            String[] parts = words[j].Split('=');
+                            if (parts.Length > 1)
+                            {
+                                attendee.name = parts[1];
+                            }
+                        }
+                        else if (words[j].StartsWith("X-NUM-GUESTS"))
+                        {
+                            String[] part = words[j].Split(':');
+                            if ((part.Length == 3) &&
+                                (part[0].StartsWith("X-NUM-GUESTS")) &&
+                                (part[1].StartsWith("mailto")))
+                            {
+                                attendee.email = part[2];
                             }
                         }
                     }
-                    else if (lines[i].StartsWith("SUMMARY"))
+
+                    m.attendees.Add(attendee);
+                }
+                else if (lines[i].StartsWith("ORGANIZER"))
+                {
+                    Person organizer = new Person();
+                    String[] words = lines[i].Split(';');
+                    for (int j = 0; j < words.Length; j++)
                     {
-                        String[] words = lines[i].Split(':');
-                        if ((words.Length == 2) &&
-                            (words[0].StartsWith("SUMMARY")))
+                        if (words[j].StartsWith("CN="))
                         {
-                            String title = words[1];
+                            String[] part = words[j].Split(':');
+                            if ((part.Length == 3) &&
+                                (part[0].StartsWith("CN")) &&
+                                (part[1].StartsWith("mailto")))
+                            {
+                                String[] subparts = part[0].Split('=');
+                                if (subparts.Length > 1)
+                                {
+                                    organizer.name = subparts[1];
+                                }
+
+                                organizer.email = part[2];
+                            }
                         }
                     }
-                    else if (lines[i].StartsWith("LOCATION"))
+
+                    m.organizer = organizer;
+                }
+                else if (lines[i].StartsWith("SUMMARY"))
+                {
+                    String[] words = lines[i].Split(':');
+                    if ((words.Length == 2) &&
+                        (words[0].StartsWith("SUMMARY")))
                     {
-                        String[] words = lines[i].Split(':');
-                        if ((words.Length == 2) &&
-                            (words[0].StartsWith("LOCATION")))
-                        {
-                            String location = words[1];
-                        }
+                        m.title = words[1];
                     }
-                    else if (lines[i].StartsWith("DTSTART"))
+                }
+                else if (lines[i].StartsWith("LOCATION"))
+                {
+                    String[] words = lines[i].Split(':');
+                    if ((words.Length == 2) &&
+                        (words[0].StartsWith("LOCATION")))
                     {
-                        String[] words = lines[i].Split(':');
-                        if ((words.Length == 2) &&
-                            (words[0].StartsWith("DTSTART")))
-                        {
-                            String startDate = words[1];
-                        }
+                        m.location = words[1];
                     }
-                    else if (lines[i].StartsWith("DTEND"))
+                }
+                else if (lines[i].StartsWith("DTSTART"))
+                {
+                    String[] words = lines[i].Split(':');
+                    if ((words.Length == 2) &&
+                        (words[0].StartsWith("DTSTART")))
                     {
-                        String[] words = lines[i].Split(':');
-                        if ((words.Length == 2) &&
-                            (words[0].StartsWith("DTEND")))
-                        {
-                            String endDate = words[1];
-                        }
+                        m.startDate = words[1];
+                    }
+                }
+                else if (lines[i].StartsWith("DTEND"))
+                {
+                    String[] words = lines[i].Split(':');
+                    if ((words.Length == 2) &&
+                        (words[0].StartsWith("DTEND")))
+                    {
+                        m.endDate = words[1];
                     }
                 }
             }
@@ -140,7 +169,7 @@ namespace paws
         /// <param name="username">Username of the user on the server</param>
         /// <param name="password">Password of the user on the server</param>
         /// <returns>All Messages on the POP3 server</returns>
-        public static List<Message> FetchAllMessages(string hostname, int port, bool useSsl, string username, string password)
+        public List<Message> FetchAllMessages(string hostname, int port, bool useSsl, string username, string password)
         {
             // The client disconnects from the server when being disposed
             using (Pop3Client client = new Pop3Client())
@@ -189,6 +218,7 @@ namespace paws
 
         static void Main(string[] args)
         {
+            MailboxScanner ms = new MailboxScanner();
         }
     }
 }
