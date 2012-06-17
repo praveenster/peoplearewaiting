@@ -7,6 +7,7 @@ using OpenPop.Mime;
 using OpenPop.Mime.Decode;
 using OpenPop.Mime.Header;
 using OpenPop.Pop3;
+using System.Globalization;
 
 namespace paws
 {
@@ -21,16 +22,27 @@ namespace paws
 
         public String ToJson()
         {
+            // "20120616T210000Z"
+            DateTime dtStart = DateTime.ParseExact(startDate, "yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
+            String startDateFormatted = dtStart.ToShortDateString(); // dtStart.Month + "/" + dtStart.Day + "/" + dtStart.Year;
+            String startTimeFormatted = dtStart.ToShortTimeString(); // dtStart.Hour + ":" + dtStart.Minute + ":" + dtStart.Second;
+            DateTime dtEnd = DateTime.ParseExact(endDate, "yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
+            String endDateFormatted = dtEnd.ToShortDateString(); //dtEnd.Month + "/" + dtEnd.Day + "/" + dtEnd.Year;
+            String endTimeFormatted = dtEnd.ToShortTimeString(); //dtEnd.Month + "/" + dtEnd.Day + "/" + dtEnd.Year;
+
             StringBuilder sb = new StringBuilder();
             sb.Append("{");
-            sb.Append("\"StartDate\" : "); sb.Append("\""); sb.Append(startDate); sb.Append("\""); sb.Append(", ");
-            sb.Append("\"EndDate\" : "); sb.Append("\""); sb.Append(endDate); sb.Append("\""); sb.Append(", ");
+            sb.Append("\"StartDate\" : "); sb.Append("\""); sb.Append(startDateFormatted); sb.Append("\""); sb.Append(", ");
+            sb.Append("\"StartTime\" : "); sb.Append("\""); sb.Append(startTimeFormatted); sb.Append("\""); sb.Append(", ");
+            sb.Append("\"EndDate\" : "); sb.Append("\""); sb.Append(endDateFormatted); sb.Append("\""); sb.Append(", ");
+            sb.Append("\"EndTime\" : "); sb.Append("\""); sb.Append(endTimeFormatted); sb.Append("\""); sb.Append(", ");
+
             sb.Append("\"Location\" : "); sb.Append("\""); sb.Append(location); sb.Append("\""); sb.Append(", ");
             sb.Append("\"Title\" : "); sb.Append("\""); sb.Append(title); sb.Append("\""); sb.Append(", ");
             sb.Append("\"Organizer\" : "); sb.Append(organizer.ToJson()); sb.Append(", ");
             sb.Append("\"Attendees\" : ");
             sb.Append("[ ");
-
+            
             for (int i = 0; i < attendees.Count; i++)
             {
                 Person p = attendees[i];
@@ -235,7 +247,7 @@ namespace paws
                                 if ((m.MessagePart.MessageParts[j].IsAttachment) &&
                                     (m.MessagePart.MessageParts[j].FileName == "invite.ics"))
                                 {
-                                    System.Console.Write(ASCIIEncoding.ASCII.GetString(m.MessagePart.MessageParts[j].Body));
+                                    //System.Console.Write(ASCIIEncoding.ASCII.GetString(m.MessagePart.MessageParts[j].Body));
                                     List<String> lines = ParseICalendar(m.MessagePart.MessageParts[j].Body);
 
                                     // Then find the relevant lines.
@@ -245,7 +257,7 @@ namespace paws
                                         Meeting meeting = new Meeting();
                                         ExtractAttributes(lines, meeting);
                                         String json = meeting.ToJson();
-                                        System.Console.Write("JSON: " + json);
+                                        System.Console.WriteLine("JSON: " + json);
                                     }
                                 }
                             }
