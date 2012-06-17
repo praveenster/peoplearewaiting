@@ -8,6 +8,9 @@ using OpenPop.Mime.Decode;
 using OpenPop.Mime.Header;
 using OpenPop.Pop3;
 using System.Globalization;
+using System.Threading;
+using System.Net;
+using System.IO;
 
 namespace paws
 {
@@ -205,6 +208,27 @@ namespace paws
             }
         }
 
+        private void PostJsonToWebServer(String json)
+        {
+            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create("http://peoplearewaiting.com/parsejson.asp");
+            request.ContentType = "application/json; charset=utf-8";
+            request.Accept = "application/json, text/javascript, */*";
+            request.Method = "POST";
+            StreamWriter writer = new StreamWriter(request.GetRequestStream());
+            writer.Write(json);
+            writer.Close();
+
+            WebResponse response = request.GetResponse();
+            Stream stream = response.GetResponseStream();
+            string jsonResponse = "";
+
+            StreamReader reader = new StreamReader(stream);
+            while (!reader.EndOfStream)
+            {
+                jsonResponse += reader.ReadLine();
+            }
+        }
+
         /// <summary>
         /// Example showing:
         ///  - how to fetch all messages from a POP3 server
@@ -215,7 +239,7 @@ namespace paws
         /// <param name="username">Username of the user on the server</param>
         /// <param name="password">Password of the user on the server</param>
         /// <returns>All Messages on the POP3 server</returns>
-        public List<Message> FetchAllMessages(string hostname, int port, bool useSsl, string username, string password)
+        public void ProcessNewMessages(string hostname, int port, bool useSsl, string username, string password)
         {
             // The client disconnects from the server when being disposed
             using (Pop3Client client = new Pop3Client())
@@ -229,14 +253,20 @@ namespace paws
                 // Get the number of messages in the inbox
                 int messageCount = client.GetMessageCount();
 
-                // We want to download all messages
-                List<Message> allMessages = new List<Message>(messageCount);
+                // We don't want to download all messages
+                // List<Message> allMessages = new List<Message>(messageCount);
                 List<string> uids = client.GetMessageUids();
 
                 // Messages are numbered in the interval: [1, messageCount]
                 // Ergo: message numbers are 1-based.
                 for (int i = 1; i <= messageCount; i++)
                 {
+                    String uid = client.GetMessageUid(i);
+                    if (seenUids.Contains(uid))
+                    {
+                        continue;
+                    }
+
                     Message m = client.GetMessage(i);
                     if (m.MessagePart != null)
                     {
@@ -257,24 +287,33 @@ namespace paws
                                         Meeting meeting = new Meeting();
                                         ExtractAttributes(lines, meeting);
                                         String json = meeting.ToJson();
+                                        System.Console.WriteLine("Processing Message: " + uid);
                                         System.Console.WriteLine("JSON: " + json);
+                                        seenUids.Add(uid);
+                                        PostJsonToWebServer(json);
                                     }
                                 }
                             }
                         }
                     }
                     //System.Console.Write(ASCIIEncoding.ASCII.GetString(m.MessagePart.MessageParts[0].Body));
-                    allMessages.Add(m);
+                    //allMessages.Add(m);
                 }
-
-                // Now return the fetched messages
-                return allMessages;
             }
         }
+
+        private List<string> seenUids = new List<string>();
 
         static void Main(string[] args)
         {
             MailboxScanner ms = new MailboxScanner();
+
+            while (true)
+            {
+                System.Console.WriteLine("Loading messages ...");
+                ms.ProcessNewMessages("pop.gmail.com", 995, true, "recent:peoplearewaiting@gmail.com", "paw123456");
+                Thread.Sleep(30 * 1000);
+            }
         }
     }
 }
